@@ -1,0 +1,198 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile with role and preferences",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Owner user ID"
+        },
+        "email": {
+          "type": "string",
+          "description": "User email address"
+        },
+        "displayName": {
+          "type": "string",
+          "description": "User display name"
+        },
+        "role": {
+          "type": "string",
+          "description": "Role in the store, e.g. Store Manager"
+        },
+        "storeName": {
+          "type": "string",
+          "description": "Name of the retail store"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Account creation timestamp"
+        }
+      },
+      "required": ["userId", "email"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "StockFlow product entity",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Product identifier"
+        },
+        "userId": {
+          "type": "string",
+          "description": "Owner user ID"
+        },
+        "name": {
+          "type": "string",
+          "description": "Product display name"
+        },
+        "category": {
+          "type": "string",
+          "description": "Product category"
+        },
+        "price": {
+          "type": "number",
+          "description": "Retail selling price"
+        },
+        "costPrice": {
+          "type": "number",
+          "description": "Wholesale cost price"
+        },
+        "stock": {
+          "type": "number",
+          "description": "Current on-hand units"
+        },
+        "minStock": {
+          "type": "number",
+          "description": "Minimum threshold"
+        },
+        "avgDailySales": {
+          "type": "number",
+          "description": "Daily sales average"
+        },
+        "leadTime": {
+          "type": "number",
+          "description": "Supplier lead time in days"
+        },
+        "safetyStock": {
+          "type": "number",
+          "description": "Buffer safety stock"
+        },
+        "sku": {
+          "type": "string",
+          "description": "Stock Keeping Unit"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Created ISO timestamp"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Updated ISO timestamp"
+        }
+      },
+      "required": ["id", "userId", "name", "category", "price", "stock"]
+    },
+    "Sale": {
+      "title": "Sale",
+      "description": "Completed point of sale transaction",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Sale transaction ID"
+        },
+        "userId": {
+          "type": "string",
+          "description": "Owner user ID"
+        },
+        "receiptNumber": {
+          "type": "string",
+          "description": "Sequential receipt number"
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Sale execution timestamp"
+        },
+        "subtotal": {
+          "type": "number",
+          "description": "Order subtotal before tax"
+        },
+        "tax": {
+          "type": "number",
+          "description": "Applicable tax amount"
+        },
+        "total": {
+          "type": "number",
+          "description": "Grand total in INR"
+        },
+        "paymentMethod": {
+          "type": "string",
+          "description": "Cash, UPI, Card, or Razorpay"
+        },
+        "razorpayPaymentId": {
+          "type": "string",
+          "description": "Razorpay test mode transaction reference"
+        },
+        "customerName": {
+          "type": "string",
+          "description": "Customer name if provided"
+        }
+      },
+      "required": ["id", "userId", "receiptNumber", "total", "paymentMethod"]
+    },
+    "Activity": {
+      "title": "Activity",
+      "description": "Activity log entry",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Activity ID"
+        },
+        "userId": {
+          "type": "string",
+          "description": "Owner user ID"
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Activity timestamp"
+        },
+        "type": {
+          "type": "string",
+          "description": "Event type"
+        },
+        "title": {
+          "type": "string",
+          "description": "Short headline"
+        },
+        "description": {
+          "type": "string",
+          "description": "Descriptive message"
+        }
+      },
+      "required": ["id", "userId", "timestamp", "type", "title"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profile with store manager identity"
+    },
+    "/users/{userId}/products/{productId}": {
+      "schema": "Product",
+      "description": "User isolated product catalog and inventory levels"
+    },
+    "/users/{userId}/sales/{saleId}": {
+      "schema": "Sale",
+      "description": "User isolated POS orders and sales receipts"
+    },
+    "/users/{userId}/activities/{activityId}": {
+      "schema": "Activity",
+      "description": "User isolated business activity timeline"
+    }
+  }
+}

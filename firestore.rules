@@ -1,0 +1,89 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidUserProfile(data, userId) {
+      return data.userId == userId &&
+        data.email is string && data.email.size() <= 120 &&
+        (!('displayName' in data) || (data.displayName is string && data.displayName.size() <= 120)) &&
+        (!('role' in data) || (data.role is string && data.role.size() <= 50)) &&
+        (!('storeName' in data) || (data.storeName is string && data.storeName.size() <= 120));
+    }
+
+    function isValidProduct(data, userId) {
+      return data.userId == userId &&
+        data.id is string && isValidId(data.id) &&
+        data.name is string && data.name.size() > 0 && data.name.size() <= 120 &&
+        data.category is string && data.category.size() <= 60 &&
+        data.price is number && data.price >= 0 &&
+        data.stock is number && data.stock >= 0 &&
+        (!('costPrice' in data) || (data.costPrice is number && data.costPrice >= 0)) &&
+        (!('minStock' in data) || (data.minStock is number && data.minStock >= 0)) &&
+        (!('avgDailySales' in data) || (data.avgDailySales is number && data.avgDailySales >= 0)) &&
+        (!('leadTime' in data) || (data.leadTime is number && data.leadTime >= 0)) &&
+        (!('safetyStock' in data) || (data.safetyStock is number && data.safetyStock >= 0));
+    }
+
+    function isValidSale(data, userId) {
+      return data.userId == userId &&
+        data.id is string && isValidId(data.id) &&
+        data.receiptNumber is string && data.receiptNumber.size() <= 60 &&
+        data.total is number && data.total >= 0 &&
+        data.paymentMethod is string && data.paymentMethod.size() <= 50;
+    }
+
+    function isValidActivity(data, userId) {
+      return data.userId == userId &&
+        data.id is string && isValidId(data.id) &&
+        data.title is string && data.title.size() <= 150 &&
+        data.type is string && data.type.size() <= 50;
+    }
+
+    // User document and isolated subcollections
+    match /users/{userId} {
+      allow get: if isOwner(userId) && isValidId(userId);
+      allow list: if false; // Disallow querying all users
+      allow create, update: if isOwner(userId) && isValidId(userId) && isValidUserProfile(request.resource.data, userId);
+      allow delete: if false;
+
+      // User Isolated Products
+      match /products/{productId} {
+        allow get, list: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isValidId(productId) && isValidProduct(request.resource.data, userId);
+        allow delete: if isOwner(userId) && isValidId(productId);
+      }
+
+      // User Isolated Sales & Receipts
+      match /sales/{saleId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(saleId) && isValidSale(request.resource.data, userId);
+        allow update, delete: if false; // Receipts are immutable audit records
+      }
+
+      // User Isolated Activities
+      match /activities/{activityId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(activityId) && isValidActivity(request.resource.data, userId);
+        allow update, delete: if isOwner(userId) && isValidId(activityId);
+      }
+    }
+  }
+}

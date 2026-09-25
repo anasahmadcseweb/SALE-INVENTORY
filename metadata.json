@@ -1,0 +1,6 @@
+{
+  "name": "STOCKFLOW - Smart Inventory & Sales Management",
+  "description": "Smart Inventory. Smarter Decisions. High-performance retail inventory, POS sales, stock-out risk prediction, and explainable reordering.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
